@@ -139,15 +139,19 @@ jobs:
       - name: Diagnose classpath
         working-directory: apps/app/gen/android
         run: |
+          exec > >(tee /tmp/ci-deps.log) 2>&1
           chmod +x gradlew
-          ./gradlew :app:dependencies --configuration arm64DebugCompileClasspath --console=plain > /tmp/ci-deps.log 2>&1 || true
+          ./gradlew :app:dependencies --configuration arm64DebugCompileClasspath --console=plain || true
           echo "===== tauri entries ====="
           grep -iE "tauri|project :" /tmp/ci-deps.log | head -30
-          echo "===== tauri-android jar ====="
-          find . -path "*tauri-android*" -name "*.jar" 2>/dev/null | head
-          unzip -l $(find . -path "*tauri-android*" -name "classes.jar" 2>/dev/null | head -1) 2>/dev/null | grep -i TauriActivity | head
-          echo "===== source tree ====="
-          ls ~/.cargo/registry/src/*/tauri-2.11.5/mobile/android/src/main/java/app/tauri/ | head
+          TAURI_DIR=$(ls -d ~/.cargo/registry/src/*/tauri-2.11.5/mobile/android | head -1)
+          echo "===== tauri source ====="
+          ls "$TAURI_DIR/src/main/java/app/tauri/" | head
+          echo "===== jars ====="
+          find "$TAURI_DIR/build" -name "*.jar" 2>/dev/null | head
+          for j in $(find "$TAURI_DIR/build" -name "*.jar" 2>/dev/null | head -3); do
+            echo "--- $j"; unzip -l "$j" 2>/dev/null | grep -ci "TauriActivity" || true
+          done
 
       - name: Verify Kotlin classpath (fast fail)
         working-directory: apps/app/gen/android
