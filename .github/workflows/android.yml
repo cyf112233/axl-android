@@ -136,6 +136,19 @@ jobs:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > apps/app/gen/android/local.properties
           echo "ndk.dir=$NDK_HOME" >> apps/app/gen/android/local.properties
 
+      - name: Diagnose classpath
+        working-directory: apps/app/gen/android
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:dependencies --configuration arm64DebugCompileClasspath --console=plain > /tmp/ci-deps.log 2>&1 || true
+          echo "===== tauri entries ====="
+          grep -iE "tauri|project :" /tmp/ci-deps.log | head -30
+          echo "===== tauri-android jar ====="
+          find . -path "*tauri-android*" -name "*.jar" 2>/dev/null | head
+          unzip -l $(find . -path "*tauri-android*" -name "classes.jar" 2>/dev/null | head -1) 2>/dev/null | grep -i TauriActivity | head
+          echo "===== source tree ====="
+          ls ~/.cargo/registry/src/*/tauri-2.11.5/mobile/android/src/main/java/app/tauri/ | head
+
       - name: Verify Kotlin classpath (fast fail)
         working-directory: apps/app/gen/android
         run: |
