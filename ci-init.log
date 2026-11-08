@@ -1,0 +1,7 @@
+        Info `tauri-build` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: []
+        Info `tauri` dependency has workspace inheritance enabled. The features array won't be automatically rewritten. Expected features: [macos-private-api, protocol-asset]
+        Info Using installed NDK: /home/runner/android-sdk/ndk/27.2.12479018
+Generating Android Studio project...
+        Info "/home/runner/work/axl-android/axl-android/apps/app" relative to "/home/runner/work/axl-android/axl-android/apps/app/gen/android/theseus_gui" is "../../../"
+victory: Project generated successfully!
+    Make cool apps! 🌻 🐕 🎉
