@@ -125,6 +125,17 @@ jobs:
           "$TOOLCHAIN/bin/llvm-strip" --strip-unneeded "$JNI/libtheseus_gui_lib.so"
           ls -lh "$JNI"
 
+      - name: Tauri android init (settings file)
+        working-directory: apps/app
+        run: |
+          # gen/android/tauri.settings.gradle 里是 cargo registry 的绝对路径，不能提交，
+          # 必须在 cargo 依赖解包之后由 CLI 生成。
+          pnpm exec tauri android init --ci --skip-targets-install
+          echo "--- tauri.settings.gradle ---"
+          cat gen/android/tauri.settings.gradle
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > gen/android/local.properties
+          echo "ndk.dir=$NDK_HOME" >> gen/android/local.properties
+
       - name: Gradle assemble
         working-directory: apps/app/gen/android
         run: |
