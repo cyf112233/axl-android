@@ -11,6 +11,9 @@ concurrency:
 
 jobs:
   build:
+    permissions:
+      contents: write
+
     runs-on: ubuntu-latest
     timeout-minutes: 330
 
@@ -141,6 +144,20 @@ jobs:
             exit $rc
           fi
           tail -20 /tmp/gradle.log
+
+      - name: Publish failure log
+        if: failure()
+        run: |
+          set -x
+          cp /tmp/gradle.log ci-gradle-failure.log 2>/dev/null || true
+          cp /tmp/sdkm.log ci-sdkmanager.log 2>/dev/null || true
+          ls -la ci-*.log 2>/dev/null || true
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git checkout -b "ci-log-${{ github.run_id }}"
+          git add -f ci-gradle-failure.log ci-sdkmanager.log 2>/dev/null || true
+          git commit -m "ci: failure log for run ${{ github.run_id }}" || true
+          git push origin "ci-log-${{ github.run_id }}" || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
