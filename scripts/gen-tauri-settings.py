@@ -23,13 +23,12 @@ def repo_root() -> str:
 
 def project_dirs(root: str) -> dict[str, str]:
     """Map Gradle project name -> source directory of its android module."""
-    metadata = json.loads(
-        subprocess.check_output(
-            ["cargo", "metadata", "--format-version", "1"],
-            cwd=root,
-            stderr=subprocess.DEVNULL,
-        )
-    )
+    base = ["cargo", "metadata", "--format-version", "1"]
+    try:
+        raw = subprocess.check_output(base + ["--offline"], cwd=root)
+    except subprocess.CalledProcessError:
+        raw = subprocess.check_output(base, cwd=root)
+    metadata = json.loads(raw)
 
     # Cargo package name -> directory containing its Cargo.toml
     package_dirs = {
