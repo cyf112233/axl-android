@@ -69,3 +69,15 @@ dependencies {
 }
 
 apply(from = "tauri.build.gradle.kts")
+
+// The Tauri Gradle fragment above declares these through a `by configurations`
+// delegate, which does not reliably contribute to the Android compile
+// classpath on a clean CI checkout. Declaring them again is idempotent and
+// guarantees app.tauri.* resolves.
+dependencies {
+    implementation(project(":tauri-android"))
+    implementation(project(":tauri-plugin-deep-link"))
+    implementation(project(":tauri-plugin-dialog"))
+    implementation(project(":tauri-plugin-fs"))
+    implementation(project(":tauri-plugin-opener"))
+}

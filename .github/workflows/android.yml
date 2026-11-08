@@ -136,6 +136,23 @@ jobs:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > apps/app/gen/android/local.properties
           echo "ndk.dir=$NDK_HOME" >> apps/app/gen/android/local.properties
 
+      - name: Verify Kotlin classpath (fast fail)
+        working-directory: apps/app/gen/android
+        run: |
+          chmod +x gradlew
+          set +e
+          ./gradlew :app:compileArm64DebugKotlin --console=plain --no-daemon > /tmp/ci-kotlin.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            python3 - <<'EOF'
+          log = open('/tmp/ci-kotlin.log', errors='replace').read()[-3000:]
+          print('::error title=kotlin::' + log.replace('%', '%25').replace('\r', '').replace('\n', '%0A'))
+          EOF
+            tail -40 /tmp/ci-kotlin.log
+            exit $rc
+          fi
+          tail -5 /tmp/ci-kotlin.log
+
       - name: Build frontend
         run: pnpm turbo run build --filter=@modrinth/app-frontend
 
