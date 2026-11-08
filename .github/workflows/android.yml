@@ -36,15 +36,39 @@ jobs:
 
       - name: Install Android SDK (command line only)
         run: |
-          set -euxo pipefail
+          set -x
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          curl -fsSL -o /tmp/cmdline-tools.zip \
+          curl -fsSL --http1.1 --retry 5 --retry-delay 3 -o /tmp/cmdline-tools.zip \
             https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl_rc=$?
+          if [ $curl_rc -ne 0 ]; then
+            echo "::error title=curl-sdk::$curl_rc"
+            exit 1
+          fi
+          unzip -q -o /tmp/cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          rm -rf "$ANDROID_SDK_ROOT/cmdline-tools/latest"
           mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
           SDKM="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKM" --licenses > /dev/null || true
-          "$SDKM" "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;${NDK_VERSION}"
+          set +e
+          yes | "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" --licenses > /tmp/lic.log 2>&1
+          echo "licenses rc=$?"
+          "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" --version
+          "$SDKM" --sdk_root="$ANDROID_SDK_ROOT" \
+            "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;${NDK_VERSION}" \
+            > /tmp/sdkm.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "::error title=sdkmanager-rc-$rc::$rc"
+            python3 - <<'EOF'
+          import os
+          log = open('/tmp/sdkm.log', errors='replace').read()[-2500:]
+          esc = log.replace('%','%25').replace('\r','').replace('\n','%0A')
+          print('::error title=sdkmanager-log::' + esc)
+          EOF
+            tail -40 /tmp/sdkm.log
+            exit $rc
+          fi
+          set -e
           echo "$ANDROID_SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           echo "sdk.dir=$ANDROID_SDK_ROOT" > apps/app/gen/android/local.properties
