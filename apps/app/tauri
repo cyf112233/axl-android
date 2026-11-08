@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+// Gradle's generated RustPlugin (from `tauri android init`) invokes
+// `node tauri android android-studio-script ...` from this directory, but the
+// Tauri CLI is only installed as a dependency. This shim forwards the call.
+require.resolve;
+require(require('path').join(__dirname, 'node_modules/@tauri-apps/cli/tauri.js'));

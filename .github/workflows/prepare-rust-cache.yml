@@ -1,0 +1,81 @@
+name: Prepare desktop release caches
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '**/Cargo.toml'
+      - Cargo.lock
+      - rust-toolchain.toml
+      - '**/.cargo/config.toml'
+      - .github/actions/setup-desktop-rust/**
+      - .github/actions/setup-mold/**
+      - .github/workflows/axolotl-release.yml
+      - .github/workflows/prepare-rust-cache.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prepare-desktop-release-dependencies
+  cancel-in-progress: false
+
+jobs:
+  dependencies:
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            target: ''
+          - runner: ubuntu-24.04-arm
+            target: ''
+          - runner: windows-2025
+            target: ''
+          - runner: macos-26
+            target: aarch64-apple-darwin
+          - runner: macos-26-intel
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.runner }}
+    env:
+      SQLX_OFFLINE: true
+      CARGO_PROFILE_RELEASE_LTO: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - uses: ./.github/actions/setup-desktop-rust
+        with:
+          profile: release
+          target: ${{ matrix.target }}
+          save-cache: 'true'
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get -o Acquire::ForceIPv4=true update
+          sudo apt-get -o Acquire::ForceIPv4=true install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf xdg-utils
+      - uses: cargo-bins/cargo-binstall@81df5c23b0dc775b009efdfc9895c5965b7a4e40 # v1.26.1
+      - run: cargo binstall --no-confirm --locked cargo-chef@0.1.71
+      - name: Compile release dependencies in a disposable recipe workspace
+        shell: bash
+        env:
+          BUILD_TARGET: ${{ matrix.target }}
+        run: |
+          cargo chef prepare --recipe-path "$RUNNER_TEMP/desktop-recipe.json"
+          build_root="$RUNNER_TEMP/desktop-dependencies"
+          mkdir -p "$build_root"
+          target_dir="$(node -p 'require("node:path").resolve("target")')"
+          cp Cargo.toml Cargo.lock rust-toolchain.toml "$build_root/"
+          cp -R .cargo "$build_root/"
+          cd "$build_root"
+          args=(--recipe-path "$RUNNER_TEMP/desktop-recipe.json" --release --locked --target-dir "$target_dir")
+          if [ -n "$BUILD_TARGET" ]; then args+=(--target "$BUILD_TARGET"); fi
+          cargo chef cook "${args[@]}" --package theseus_gui --features updater,tauri/custom-protocol
+          if [ "$RUNNER_OS" = Windows ]; then
+            cargo chef cook "${args[@]}" --package axolotl-installer-ui
+          fi

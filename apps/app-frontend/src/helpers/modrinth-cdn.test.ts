@@ -1,0 +1,28 @@
+import { expect, it } from 'vitest'
+
+import { normalizeModrinthCdnUrl } from './modrinth-cdn.ts'
+
+it('saved CDN links retain exact encoding and migrate to the current host', () => {
+    const suffix = '/data/%e9%87%91/file+name%2B.jar?token=a%2bb&x=1&x=2#fragment'
+    for (const prefix of ['https://cdn-alt.modrinth.com', 'HTTPS://CDN-ALT.MODRINTH.COM:443']) {
+        expect(normalizeModrinthCdnUrl(prefix + suffix)).toBe(
+            prefix.split('://')[0] + '://cdn.modrinth.com' + suffix,
+        )
+    }
+    expect(normalizeModrinthCdnUrl('https://cdn-alt.modrinth.com')).toBe('https://cdn.modrinth.com')
+})
+
+it('current links and other authorities are left unchanged', () => {
+    for (const input of [
+        'https://cdn.modrinth.com/file.jar?x=%2b',
+        'https://cdn-raw.modrinth.com/file.png',
+        'http://cdn-alt.modrinth.com/file.jar',
+        'https://cdn-alt.modrinth.com:8443/file.jar',
+        'https://user:secret@cdn-alt.modrinth.com/file.jar',
+        'https://cdn-alt.modrinth.com@evil.example/file.jar',
+        'https://cdn-alt.modrinth.com.evil.example/file.jar',
+        'https://evil.example/cdn-alt.modrinth.com',
+        'invalid URL',
+    ])
+        expect(normalizeModrinthCdnUrl(input)).toBe(input)
+})

@@ -1,0 +1,21 @@
+{
+  "name": "@modrinth/app",
+  "scripts": {
+    "tauri": "node ../../scripts/axolotl/tauri.mjs",
+    "build": "node ../../scripts/axolotl/tauri.mjs build --config tauri-release.conf.json",
+    "dev": "node ../../scripts/axolotl/tauri.mjs dev",
+    "test": "node ../../scripts/axolotl/cargo.mjs nextest run --all-targets --no-fail-fast",
+    "lint": "node ../../scripts/axolotl/cargo.mjs fmt --check && node ../../scripts/axolotl/cargo.mjs clippy --all-targets && node ../../scripts/axolotl/cargo.mjs clippy --all-targets --features updater",
+    "lint:ancillary": "prettier --check .",
+    "fix": "node ../../scripts/axolotl/cargo.mjs clippy --all-targets --fix --allow-dirty && node ../../scripts/axolotl/cargo.mjs clippy --all-targets --features updater --fix --allow-dirty && node ../../scripts/axolotl/cargo.mjs fmt",
+    "fix:ancillary": "prettier --write ."
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4"
+  },
+  "dependencies": {
+    "@modrinth/app-frontend": "workspace:*",
+    "@modrinth/app-lib": "workspace:*",
+    "@modrinth/daedalus": "workspace:*"
+  }
+}
