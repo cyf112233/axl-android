@@ -126,9 +126,21 @@ jobs:
         working-directory: apps/app/gen/android
         run: |
           chmod +x gradlew
+          set +e
           ./gradlew app:assembleArm64Debug \
             -x rustBuildArm64Debug -x rustBuildUniversalDebug \
-            --console=plain --no-daemon
+            --console=plain --no-daemon --stacktrace > /tmp/gradle.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            python3 - <<'EOF'
+          log = open('/tmp/gradle.log', errors='replace').read()[-4000:]
+          print('::error title=gradle-log::' + log.replace('%', '%25').replace('\r', '').replace('\n', '%0A'))
+          EOF
+            echo "--- tail ---"
+            tail -60 /tmp/gradle.log
+            exit $rc
+          fi
+          tail -20 /tmp/gradle.log
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
