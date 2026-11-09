@@ -6,67 +6,6 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Axolotl Launcher</title>
 
-        <!--
-          Android: the launcher is designed for the 1280x800 desktop window. A
-          phone cannot show that layout at its own width, so the app is rendered
-          in a fixed 1280x800 canvas and the whole canvas is scaled down to fit
-          the screen, letterboxing whatever is left over. Desktop keeps its
-          normal layout: none of this applies when the user agent is not Android.
-        -->
-        <script>
-            ;(() => {
-                if (!/Android/i.test(navigator.userAgent)) return
-                const WIDTH = 1280
-                const HEIGHT = 800
-                const root = document.documentElement
-                root.classList.add('android-canvas')
-                const fit = () => {
-                    const scale = Math.min(window.innerWidth / WIDTH, window.innerHeight / HEIGHT)
-                    root.style.setProperty('--canvas-width', `${WIDTH}px`)
-                    root.style.setProperty('--canvas-height', `${HEIGHT}px`)
-                    root.style.setProperty('--canvas-scale', String(scale))
-                }
-                fit()
-                addEventListener('resize', fit)
-            })()
-        </script>
-        <style>
-            html.android-canvas,
-            html.android-canvas body {
-                height: 100%;
-                margin: 0;
-                overflow: hidden;
-                background: #000;
-            }
-            html.android-canvas #app {
-                position: absolute;
-                left: 50%;
-                top: 50%;
-                width: var(--canvas-width);
-                height: var(--canvas-height);
-                overflow: hidden;
-                transform: translate(-50%, -50%) scale(var(--canvas-scale));
-                transform-origin: center center;
-                background: var(--color-bg, #1a1a1a);
-            }
-            /* The shell sizes itself from the viewport; inside the canvas the
-               canvas is the viewport. */
-            html.android-canvas .app-grid-layout {
-                height: var(--canvas-height);
-            }
-            html.android-canvas .app-contents,
-            html.android-canvas .app-sidebar {
-                height: calc(var(--canvas-height) - var(--top-bar-height));
-            }
-            html.android-canvas .oobe-card {
-                height: min(44rem, calc(var(--canvas-height) - 6rem));
-            }
-            html.android-canvas .gradient-bg {
-                width: var(--canvas-width);
-                height: var(--canvas-height);
-            }
-        </style>
-
         <link rel="stylesheet" href="/src/assets/stylesheets/global.scss" />
     </head>
 

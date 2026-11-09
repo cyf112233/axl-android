@@ -8,14 +8,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 /**
- * Chrome's page zoom reflows the page: the layout viewport itself gets wider,
- * so components re-arrange instead of just being scaled down. The launcher is
- * built for a desktop-width viewport, so on a phone we reproduce that by
- * widening the viewport meta to `innerWidth / PAGE_ZOOM` and scaling the
- * visual result by the same factor.
+ * The launcher is laid out for the default desktop window (1280x800). A phone
+ * reports ~360 CSS px, which collapses every desktop layout, so the WebView
+ * layout viewport is widened to [DESKTOP_WIDTH] and the WebView scales the page
+ * down to fit the screen width. Media queries, flex and grid then resolve to the
+ * same values they do on the desktop window instead of the phone breakpoints.
  *
- * Everything else that differs on a phone is handled in the frontend, behind
- * platform checks, so this class stays limited to the window itself.
+ * Nothing else about the UI is patched here; platform differences live in the
+ * frontend behind explicit Android checks.
  */
 class MainActivity : TauriActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,30 +34,32 @@ class MainActivity : TauriActivity() {
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
-    // Without this the WebView ignores the width in the viewport meta and
-    // always lays out at device-width.
+
+    // `width` in the viewport meta is ignored unless wide viewport support is
+    // on, and overview mode is what turns "1280 px wide" into "scale to fit the
+    // screen width" instead of leaving the page scrollable sideways.
     webView.settings.useWideViewPort = true
-    webView.settings.loadWithOverviewMode = false
-    installPageZoom(webView)
+    webView.settings.loadWithOverviewMode = true
+    installDesktopViewport(webView)
   }
 
-  private fun installPageZoom(webView: WebView) {
+  private fun installDesktopViewport(webView: WebView) {
     val script =
       """
       (function () {
-        if (window.__axolotlPageZoom) { return; }
+        if (window.__axolotlDesktopViewport) { return; }
         var head = document.head || document.getElementsByTagName('head')[0];
         if (!head) { return; }
-        var zoom = $PAGE_ZOOM;
-        var width = Math.round(window.innerWidth / zoom);
         var meta = document.querySelector('meta[name="viewport"]');
         if (!meta) {
           meta = document.createElement('meta');
           meta.setAttribute('name', 'viewport');
           head.appendChild(meta);
         }
-        meta.setAttribute('content', 'width=' + width + ', initial-scale=' + zoom);
-        window.__axolotlPageZoom = true;
+        // No initial-scale: the WebView derives it from the width, so the
+        // 1280 px layout fits the screen width exactly.
+        meta.setAttribute('content', 'width=$DESKTOP_WIDTH, user-scalable=yes');
+        window.__axolotlDesktopViewport = true;
       })();
       """
         .trimIndent()
@@ -70,7 +72,7 @@ class MainActivity : TauriActivity() {
   }
 
   private companion object {
-    /** 70%: a 360 dp screen lays out at roughly 514 CSS px. */
-    const val PAGE_ZOOM = 0.7
+    /** Width of the default desktop window in `tauri.conf.json`. */
+    const val DESKTOP_WIDTH = 1280
   }
 }
