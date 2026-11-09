@@ -54,7 +54,11 @@ pub async fn network_test(
     let cancellation = super::search_cancellation::SearchCancellation::register(
         format!("network-test:{request_id}"),
     );
-    tokio::select! {
+    // Android has no console: these lines are the only trace of a probe that
+    // never comes back, and they are copied into exported logs.
+    let started = std::time::Instant::now();
+    tracing::info!(?target, ?mode, "Network test started");
+    let outcome = tokio::select! {
         biased;
         _ = cancellation.cancelled() => Ok(None),
         result = async {
@@ -63,7 +67,15 @@ pub async fn network_test(
             })?;
             Ok(Some(theseus::test_network_connection(target, mode).await?))
         } => result,
-    }
+    };
+    tracing::info!(
+        ?target,
+        ?mode,
+        elapsed_ms = started.elapsed().as_millis() as u64,
+        ok = outcome.is_ok(),
+        "Network test finished"
+    );
+    outcome
 }
 
 #[tauri::command]

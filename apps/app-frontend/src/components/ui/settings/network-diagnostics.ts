@@ -43,6 +43,23 @@ export interface NetworkTestResult {
 export interface NetworkProbe {
     state: ProbeState
     result?: NetworkTestResult
+    /** Why the probe ended in `failed`: the backend timed out or rejected the call. */
+    error?: 'timeout' | 'request'
+}
+
+// The backend bounds every probe (DNS + request) well below this. The ceiling
+// exists so a wedged IPC call can never leave a row stuck on "Testing…".
+const PROBE_TIMEOUT_MS = 15_000
+// Matches the backend's probe slots; more would only compete for bandwidth.
+const MAX_CONCURRENT_PROBES = 2
+
+function newRequestId() {
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+    // Older Android WebViews lack randomUUID; UUIDv4 is not security sensitive here.
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+        const value = (Math.random() * 16) | 0
+        return (char === 'x' ? value : (value & 0x3) | 0x8).toString(16)
+    })
 }
 
 export function resultStatus(result: NetworkTestResult) {
@@ -88,22 +105,43 @@ export function useNetworkDiagnostics() {
 
     async function probe(target: NetworkTarget, run: number, testMode: NetworkMode) {
         if (run !== generation) return
-        const requestId = crypto.randomUUID()
+        const requestId = newRequestId()
         requests.set(target, requestId)
         probes.value[target].state = 'running'
+        let timer: ReturnType<typeof setTimeout> | undefined
         try {
-            const result = await invoke<NetworkTestResult | null>('plugin:settings|network_test', {
-                requestId,
-                target,
-                mode: testMode,
-            })
+            const result = await Promise.race([
+                invoke<NetworkTestResult | null>('plugin:settings|network_test', {
+                    requestId,
+                    target,
+                    mode: testMode,
+                }),
+                new Promise<never>((_, reject) => {
+                    timer = setTimeout(
+                        () => reject(new Error('probe-timeout')),
+                        PROBE_TIMEOUT_MS,
+                    )
+                }),
+            ])
             if (run !== generation) return
             probes.value[target] = result
                 ? { state: 'done', result }
                 : { ...probes.value[target], state: 'cancelled' }
-        } catch {
-            if (run === generation) probes.value[target].state = 'failed'
+        } catch (error) {
+            if (run === generation) {
+                const timedOut = error instanceof Error && error.message === 'probe-timeout'
+                if (timedOut) {
+                    // The backend never answered, so stop it before a retry queues behind it.
+                    void invoke('plugin:settings|network_test_cancel', { requestId }).catch(() => {})
+                }
+                probes.value[target] = {
+                    ...probes.value[target],
+                    state: 'failed',
+                    error: timedOut ? 'timeout' : 'request',
+                }
+            }
         } finally {
+            if (timer !== undefined) clearTimeout(timer)
             if (requests.get(target) === requestId) requests.delete(target)
         }
     }
@@ -116,11 +154,19 @@ export function useNetworkDiagnostics() {
         targets.forEach((id) => {
             probes.value[id].state = 'queued'
         })
-        // One transfer at a time avoids having probes compete for the user's bandwidth.
-        for (const id of targets) {
-            if (run !== generation) break
-            await probe(id, run, testMode)
+        // A single unreachable host used to hold up every probe behind it; two
+        // at a time keeps a bad endpoint from hiding the rest of the results.
+        const queue = [...targets]
+        const worker = async () => {
+            while (run === generation) {
+                const id = queue.shift()
+                if (!id) return
+                await probe(id, run, testMode)
+            }
         }
+        await Promise.all(
+            Array.from({ length: Math.min(MAX_CONCURRENT_PROBES, queue.length) }, worker),
+        )
     }
 
     function stop() {

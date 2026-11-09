@@ -169,7 +169,7 @@ function run(target?: (typeof networkTargets)[number]['id']) {
                         role="alert"
                         class="mb-0 text-sm text-[var(--color-red)]"
                     >
-                        {{ formatMessage(messages.requestFailed) }}
+                        {{ errorMessage(target.error ?? 'request') }}
                     </p>
                     <template v-if="target.result">
                         <p
