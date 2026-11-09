@@ -1,0 +1,156 @@
+Downloading https://mirrors.cloud.tencent.com/gradle/gradle-8.14.3-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%..............100%
+
+Welcome to Gradle 8.14.3!
+
+Here are the highlights of this release:
+ - Java 24 support
+ - GraalVM Native Image toolchain selection
+ - Enhancements to test reporting
+ - Build Authoring improvements
+
+For more details see https://docs.gradle.org/8.14.3/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :buildSrc:pluginDescriptors
+> Task :buildSrc:processResources
+
+> Task :buildSrc:compileKotlin
+w: file:///home/runner/work/axl-android/axl-android/apps/app/gen/android/buildSrc/src/main/java/red/ghs/axolotl/kotlin/BuildTask.kt:53:17 'exec(Action<in ExecSpec!>): ExecResult' is deprecated. Deprecated in Java
+
+> Task :buildSrc:compileJava NO-SOURCE
+> Task :buildSrc:compileGroovy NO-SOURCE
+> Task :buildSrc:classes
+> Task :buildSrc:jar
+Checking the license for package Android SDK Build-Tools 35 in /home/runner/android-sdk/licenses
+License for package Android SDK Build-Tools 35 accepted.
+Preparing "Install Android SDK Build-Tools 35 v.35.0.0".
+"Install Android SDK Build-Tools 35 v.35.0.0" ready.
+Installing Android SDK Build-Tools 35 in /home/runner/android-sdk/build-tools/35.0.0
+"Install Android SDK Build-Tools 35 v.35.0.0" complete.
+"Install Android SDK Build-Tools 35 v.35.0.0" finished.
+[=========                              ] 25%                                   [=========                              ] 25% Fetch remote repository...        [=======================================] 100% Fetch remote repository...       
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preArm64DebugBuild UP-TO-DATE
+> Task :app:generateArm64DebugBuildConfig
+> Task :tauri-android:preBuild UP-TO-DATE
+> Task :tauri-android:preDebugBuild UP-TO-DATE
+> Task :tauri-plugin-deep-link:preBuild UP-TO-DATE
+> Task :tauri-plugin-deep-link:preDebugBuild UP-TO-DATE
+> Task :tauri-plugin-dialog:preBuild UP-TO-DATE
+> Task :tauri-plugin-dialog:preDebugBuild UP-TO-DATE
+> Task :tauri-plugin-deep-link:writeDebugAarMetadata
+> Task :tauri-android:writeDebugAarMetadata
+> Task :tauri-plugin-fs:preBuild UP-TO-DATE
+> Task :tauri-plugin-fs:preDebugBuild UP-TO-DATE
+> Task :tauri-plugin-dialog:writeDebugAarMetadata
+> Task :tauri-plugin-opener:preBuild UP-TO-DATE
+> Task :tauri-plugin-fs:writeDebugAarMetadata
+> Task :tauri-plugin-opener:preDebugBuild UP-TO-DATE
+> Task :tauri-plugin-opener:writeDebugAarMetadata
+> Task :app:generateArm64DebugResValues
+> Task :tauri-android:generateDebugResValues
+> Task :tauri-android:generateDebugResources
+> Task :app:checkArm64DebugAarMetadata
+> Task :tauri-android:packageDebugResources
+> Task :tauri-plugin-deep-link:generateDebugResValues
+> Task :tauri-plugin-deep-link:generateDebugResources
+> Task :tauri-plugin-deep-link:packageDebugResources
+> Task :tauri-plugin-dialog:generateDebugResValues
+> Task :tauri-plugin-dialog:generateDebugResources
+> Task :tauri-plugin-dialog:packageDebugResources
+> Task :tauri-plugin-fs:generateDebugResValues
+> Task :tauri-plugin-fs:generateDebugResources
+> Task :tauri-plugin-fs:packageDebugResources
+> Task :tauri-plugin-opener:generateDebugResValues
+> Task :tauri-plugin-opener:generateDebugResources
+> Task :tauri-plugin-opener:packageDebugResources
+> Task :app:mapArm64DebugSourceSetPaths
+> Task :app:generateArm64DebugResources
+> Task :app:packageArm64DebugResources
+> Task :app:createArm64DebugCompatibleScreenManifests
+> Task :app:extractDeepLinksArm64Debug
+> Task :tauri-android:extractDeepLinksDebug
+> Task :tauri-plugin-deep-link:extractDeepLinksDebug
+> Task :app:parseArm64DebugLocalResources
+> Task :tauri-plugin-dialog:extractDeepLinksDebug
+> Task :tauri-android:processDebugManifest
+> Task :tauri-plugin-dialog:processDebugManifest
+> Task :tauri-plugin-deep-link:processDebugManifest
+> Task :tauri-plugin-fs:extractDeepLinksDebug
+> Task :tauri-plugin-opener:extractDeepLinksDebug
+> Task :tauri-plugin-fs:processDebugManifest
+> Task :tauri-plugin-opener:processDebugManifest
+> Task :app:mergeArm64DebugResources
+> Task :tauri-android:compileDebugLibraryResources
+> Task :app:processArm64DebugMainManifest
+> Task :app:processArm64DebugManifest
+> Task :app:processArm64DebugManifestForPackage
+> Task :tauri-plugin-deep-link:compileDebugLibraryResources
+> Task :tauri-android:parseDebugLocalResources
+> Task :tauri-plugin-deep-link:parseDebugLocalResources
+> Task :tauri-plugin-dialog:compileDebugLibraryResources
+> Task :tauri-plugin-dialog:parseDebugLocalResources
+> Task :tauri-plugin-fs:compileDebugLibraryResources
+> Task :tauri-plugin-fs:parseDebugLocalResources
+> Task :tauri-plugin-dialog:generateDebugRFile
+> Task :tauri-plugin-deep-link:generateDebugRFile
+> Task :tauri-android:generateDebugRFile
+> Task :tauri-plugin-fs:generateDebugRFile
+> Task :tauri-plugin-opener:compileDebugLibraryResources
+> Task :tauri-android:checkKotlinGradlePluginConfigurationErrors
+> Task :tauri-plugin-opener:parseDebugLocalResources
+> Task :tauri-android:generateDebugBuildConfig
+> Task :tauri-plugin-opener:generateDebugRFile
+> Task :tauri-plugin-deep-link:checkKotlinGradlePluginConfigurationErrors
+> Task :tauri-android:javaPreCompileDebug
+> Task :tauri-plugin-dialog:checkKotlinGradlePluginConfigurationErrors
+> Task :tauri-plugin-deep-link:javaPreCompileDebug
+> Task :tauri-plugin-fs:checkKotlinGradlePluginConfigurationErrors
+> Task :tauri-plugin-dialog:javaPreCompileDebug
+> Task :tauri-plugin-opener:checkKotlinGradlePluginConfigurationErrors
+> Task :tauri-plugin-fs:javaPreCompileDebug
+> Task :tauri-plugin-opener:javaPreCompileDebug
+> Task :app:processArm64DebugResources
+
+> Task :tauri-android:compileDebugKotlin
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.5/mobile/android/src/main/java/app/tauri/AppPlugin.kt:35:37 'onBackPressed(): Unit' is deprecated. Deprecated in Java
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.5/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:107:5 'onDestroy(): Unit' is deprecated. use onDestroy(activity: AppCompatActivity) instead
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.5/mobile/android/src/main/java/app/tauri/plugin/Plugin.kt:112:5 'onRestart(): Unit' is deprecated. use onRestart(activity: AppCompatActivity) instead
+w: file:///home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.5/mobile/android/src/main/java/app/tauri/plugin/PluginMethodData.kt:11:23 Parameter 'methodDecorator' is never used
+
+> Task :tauri-android:compileDebugJavaWithJavac
+> Task :tauri-android:bundleLibCompileToJarDebug
+> Task :tauri-plugin-deep-link:compileDebugKotlin
+> Task :tauri-plugin-deep-link:compileDebugJavaWithJavac NO-SOURCE
+> Task :tauri-plugin-deep-link:bundleLibCompileToJarDebug
+> Task :tauri-plugin-fs:compileDebugKotlin
+> Task :tauri-plugin-opener:compileDebugKotlin
+> Task :tauri-plugin-fs:compileDebugJavaWithJavac NO-SOURCE
+> Task :tauri-plugin-fs:bundleLibCompileToJarDebug
+> Task :tauri-plugin-opener:compileDebugJavaWithJavac NO-SOURCE
+> Task :tauri-plugin-opener:bundleLibCompileToJarDebug
+> Task :tauri-plugin-dialog:compileDebugKotlin
+> Task :tauri-plugin-dialog:compileDebugJavaWithJavac NO-SOURCE
+> Task :tauri-plugin-dialog:bundleLibCompileToJarDebug
+
+> Task :app:compileArm64DebugKotlin
+w: file:///home/runner/work/axl-android/axl-android/apps/app/gen/android/app/src/main/java/red/ghs/axolotl/generated/RustWebView.kt:26:18 'setter for databaseEnabled: Boolean' is deprecated. Deprecated in Java
+w: file:///home/runner/work/axl-android/axl-android/apps/app/gen/android/app/src/main/java/red/ghs/axolotl/generated/WryActivity.kt:69:46 'onBackPressed(): Unit' is deprecated. This method has been deprecated in favor of using the
+      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.
+      The OnBackPressedDispatcher controls how back button events are dispatched
+      to one or more {@link OnBackPressedCallback} objects.
+
+[Incubating] Problems report is available at: file:///home/runner/work/axl-android/axl-android/apps/app/gen/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 2m 15s
+87 actionable tasks: 87 executed
