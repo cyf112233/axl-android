@@ -1,6 +1,8 @@
 package red.ghs.axolotl
 
 import android.os.Bundle
+import android.view.View
+import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
@@ -34,9 +36,32 @@ class MainActivity : TauriActivity() {
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
-    webView.settings.useWideViewPort = true
-    // Scale the 1280 px layout down to the screen width instead of leaving the
-    // page scrollable sideways.
-    webView.settings.loadWithOverviewMode = true
+
+    webView.settings.apply {
+      useWideViewPort = true
+      // Scale the 1280 px layout down to the screen width instead of leaving
+      // the page scrollable sideways.
+      loadWithOverviewMode = true
+
+      // The launcher is an application, not a document: pinch zoom, the zoom
+      // buttons overlay and double-tap zoom all fight with the app's own
+      // layout, which is already scaled by the canvas in the frontend.
+      setSupportZoom(false)
+      builtInZoomControls = false
+      displayZoomControls = false
+
+      // Avatar and skin textures are served over plain http by Mojang while
+      // the app itself runs on https, which WebView blocks by default.
+      mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+    }
+
+    // Long press would open the text selection handles and the "copy / open
+    // link" context menu; dragging would ghost a screenshot of the page.
+    // Both are browser affordances that a desktop app does not have.
+    webView.isLongClickable = false
+    webView.isHapticFeedbackEnabled = false
+    webView.overScrollMode = View.OVER_SCROLL_NEVER
+    webView.setOnLongClickListener { true }
+    webView.setOnDragListener { _, _ -> true }
   }
 }

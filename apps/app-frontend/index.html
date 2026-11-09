@@ -51,6 +51,21 @@
                 overflow: hidden;
                 background: #000;
             }
+            /* The launcher is an application, not a document: text selection
+               handles, the long-press callout and the drag ghost are browser
+               affordances that do not belong here. Editable fields keep them. */
+            html.android-canvas * {
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-touch-callout: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+            html.android-canvas input,
+            html.android-canvas textarea,
+            html.android-canvas [contenteditable='true'] {
+                -webkit-user-select: text;
+                user-select: text;
+            }
             html.android-canvas #app {
                 position: absolute;
                 left: 50%;
