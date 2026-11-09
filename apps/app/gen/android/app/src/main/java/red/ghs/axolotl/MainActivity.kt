@@ -8,14 +8,14 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
 /**
- * The launcher is laid out for the default desktop window (1280x800). A phone
- * reports ~360 CSS px, which collapses every desktop layout, so the WebView
- * layout viewport is widened to [DESKTOP_WIDTH] and the WebView scales the page
- * down to fit the screen width. Media queries, flex and grid then resolve to the
- * same values they do on the desktop window instead of the phone breakpoints.
+ * The launcher is laid out for the default desktop window (1280x800) and the
+ * activity is locked to landscape, so the WebView only has to report that width
+ * to the page. Wide viewport support is what makes the `width` in the viewport
+ * meta take effect; without it the page would always lay out at device width
+ * (~360 CSS px) and every desktop layout would collapse.
  *
- * Nothing else about the UI is patched here; platform differences live in the
- * frontend behind explicit Android checks.
+ * The page itself widens the viewport to 1280 and letterboxes a 1280x800 canvas
+ * (see `apps/app-frontend/index.html`), so nothing else is patched here.
  */
 class MainActivity : TauriActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,45 +34,9 @@ class MainActivity : TauriActivity() {
 
   override fun onWebViewCreate(webView: WebView) {
     super.onWebViewCreate(webView)
-
-    // `width` in the viewport meta is ignored unless wide viewport support is
-    // on, and overview mode is what turns "1280 px wide" into "scale to fit the
-    // screen width" instead of leaving the page scrollable sideways.
     webView.settings.useWideViewPort = true
+    // Scale the 1280 px layout down to the screen width instead of leaving the
+    // page scrollable sideways.
     webView.settings.loadWithOverviewMode = true
-    installDesktopViewport(webView)
-  }
-
-  private fun installDesktopViewport(webView: WebView) {
-    val script =
-      """
-      (function () {
-        if (window.__axolotlDesktopViewport) { return; }
-        var head = document.head || document.getElementsByTagName('head')[0];
-        if (!head) { return; }
-        var meta = document.querySelector('meta[name="viewport"]');
-        if (!meta) {
-          meta = document.createElement('meta');
-          meta.setAttribute('name', 'viewport');
-          head.appendChild(meta);
-        }
-        // No initial-scale: the WebView derives it from the width, so the
-        // 1280 px layout fits the screen width exactly.
-        meta.setAttribute('content', 'width=$DESKTOP_WIDTH, user-scalable=yes');
-        window.__axolotlDesktopViewport = true;
-      })();
-      """
-        .trimIndent()
-
-    // The document does not exist yet when the webview is created, so retry
-    // until the head is there. The script is idempotent.
-    for (delay in longArrayOf(0, 200, 600, 1200, 2500, 5000)) {
-      webView.postDelayed({ runCatching { webView.evaluateJavascript(script, null) } }, delay)
-    }
-  }
-
-  private companion object {
-    /** Width of the default desktop window in `tauri.conf.json`. */
-    const val DESKTOP_WIDTH = 1280
   }
 }

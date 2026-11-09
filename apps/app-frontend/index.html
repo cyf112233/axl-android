@@ -6,6 +6,80 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Axolotl Launcher</title>
 
+        <!--
+          Android: the launcher targets the 1280x800 desktop window. MainActivity
+          turns on wide viewport support, and the viewport is widened to 1280
+          here, so media queries and flex/grid resolve exactly as they do on the
+          desktop window instead of matching phone breakpoints. The app is then
+          laid out on a 1280x800 canvas that is scaled down to fit the screen,
+          letterboxing whatever is left over.
+
+          Desktop is untouched: none of this runs when the user agent is not
+          Android, and the desktop window keeps sizing itself from the viewport.
+        -->
+        <script>
+            ;(() => {
+                if (!/Android/i.test(navigator.userAgent)) return
+                const WIDTH = 1280
+                const HEIGHT = 800
+                const root = document.documentElement
+                const meta = document.querySelector('meta[name="viewport"]')
+                if (meta) meta.setAttribute('content', `width=${WIDTH}`)
+                root.classList.add('android-canvas')
+                const fit = () => {
+                    // innerWidth is the widened layout viewport (1280), so this
+                    // is normally min(1, screenHeight / 800): the canvas only
+                    // shrinks when the screen is shorter than 800 CSS px, which
+                    // is exactly the landscape letterbox case.
+                    const scale = Math.min(1, window.innerWidth / WIDTH, window.innerHeight / HEIGHT)
+                    root.style.setProperty('--canvas-width', `${WIDTH}px`)
+                    root.style.setProperty('--canvas-height', `${HEIGHT}px`)
+                    root.style.setProperty('--canvas-scale', String(scale))
+                }
+                // Changing the viewport meta re-lays out asynchronously, so the
+                // first measurement can still be the phone width.
+                fit()
+                addEventListener('resize', fit)
+                for (const delay of [0, 50, 200, 600, 1500]) setTimeout(fit, delay)
+            })()
+        </script>
+        <style>
+            html.android-canvas,
+            html.android-canvas body {
+                height: 100%;
+                margin: 0;
+                overflow: hidden;
+                background: #000;
+            }
+            html.android-canvas #app {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: var(--canvas-width);
+                height: var(--canvas-height);
+                overflow: hidden;
+                transform: translate(-50%, -50%) scale(var(--canvas-scale));
+                transform-origin: center center;
+                background: var(--color-bg, #1a1a1a);
+            }
+            /* The shell sizes itself from the viewport; inside the canvas the
+               canvas is the viewport. */
+            html.android-canvas .app-grid-layout {
+                height: var(--canvas-height);
+            }
+            html.android-canvas .app-contents,
+            html.android-canvas .app-sidebar {
+                height: calc(var(--canvas-height) - var(--top-bar-height));
+            }
+            html.android-canvas .oobe-card {
+                height: min(44rem, calc(var(--canvas-height) - 6rem));
+            }
+            html.android-canvas .gradient-bg {
+                width: var(--canvas-width);
+                height: var(--canvas-height);
+            }
+        </style>
+
         <link rel="stylesheet" href="/src/assets/stylesheets/global.scss" />
     </head>
 
