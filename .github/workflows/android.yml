@@ -159,13 +159,28 @@ jobs:
       - name: Build Rust cdylib
         run: |
           set -euxo pipefail
+          df -h /
+          du -sh target apps/app/gen android-sdk .cargo ~/.cargo 2>/dev/null || true
           TOOLCHAIN="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64"
           export PATH="$TOOLCHAIN/bin:$PATH"
           export CC_aarch64_linux_android="$TOOLCHAIN/bin/aarch64-linux-android24-clang"
           export CXX_aarch64_linux_android="$TOOLCHAIN/bin/aarch64-linux-android24-clang++"
           export AR_aarch64_linux_android="$TOOLCHAIN/bin/llvm-ar"
           export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$TOOLCHAIN/bin/aarch64-linux-android24-clang"
-          cargo build -p theseus_gui --lib --release --target aarch64-linux-android
+          set +e
+          cargo build -p theseus_gui --lib --release --target aarch64-linux-android > /tmp/ci-rust.log 2>&1
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            python3 - <<'EOF'
+          log = open('/tmp/ci-rust.log', errors='replace').read()[-6000:]
+          print('::error title=rust::' + log.replace('%', '%25').replace('\r', '').replace('\n', '%0A'))
+          EOF
+            grep -nE "^error|error\[|cannot find|failed" /tmp/ci-rust.log | head -30
+            tail -60 /tmp/ci-rust.log
+            exit $rc
+          fi
+          set -e
+          tail -5 /tmp/ci-rust.log
           JNI=apps/app/gen/android/app/src/main/jniLibs/arm64-v8a
           cp target/aarch64-linux-android/release/libtheseus_gui_lib.so "$JNI/"
           "$TOOLCHAIN/bin/llvm-strip" --strip-unneeded "$JNI/libtheseus_gui_lib.so"
