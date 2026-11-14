@@ -25,7 +25,7 @@ use crate::state::documents::ai::{AiDocument, ProviderConfig};
 use crate::util::oauth_credentials as credentials;
 use crate::{ErrorKind, State};
 
-const CATALOG_SOURCE: &str = "LobeHub 700c8349e35477cb602975f8089c942e96bc9601";
+const CATALOG_SOURCE: &str = "LobeHub 69f8dcdfae1c59a5ffb703b3a0187223987bcd56";
 const KEYRING_PREFIX: &str = "ai-provider";
 const API_KEY_CREDENTIAL: &str = "api-key";
 const AWS_ACCESS_KEY_ID_CREDENTIAL: &str = "aws-access-key-id";
